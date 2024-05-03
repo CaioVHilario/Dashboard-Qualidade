@@ -47,51 +47,80 @@ month = st.sidebar.selectbox("Mês", df_backlog_all["Month"].unique())
 processo = df_backlog_real['Nome'].iloc[1]
 # book_title = df_book["book title"].iloc[0]
 
-st.title('Em andamento')
-st.subheader(processo)
+
+colA, colB = st.columns([1, 5])
+caminho_do_arquivo = 'D:\Arquivos\skywards\Logo UFVoa.png'
+altura_desejada = 150
+
+colA.image(caminho_do_arquivo, caption='',
+           width=altura_desejada)
+colB.title('Gerenciamento de Projeto | Skywards UFVoa')
 
 # Filtra o dataframe de acordo com a selectbox
 df_filter = df_backlog_all[df_backlog_all["Month"] == month]
 df_filter_real = df_backlog_real[df_backlog_real["Month"] == month]
 # df_filter
-df_filter_real
+# df_filter_real
 
 porcentagem_total = df_backlog_all['%'].sum() / len(df_backlog_all)
+print(f"Porcentagem total do projeto: {porcentagem_total:.2%}")
+
+porcentagem_total_mes = df_filter_real['%'].sum() / len(df_filter_real)
 print(f"Porcentagem total do projeto: {porcentagem_total:.2%}")
 
 # Define os dados para o gráfico de medidor de progresso circular
 dados = {'Categoria': ['Concluído', 'Restante'],
          'Porcentagem': [porcentagem_total, 1 - porcentagem_total]}
+dados2 = {'Categoria': ['Concluído', 'Restante'],
+          'Porcentagem': [porcentagem_total_mes, 1 - porcentagem_total_mes]}
 
 # Cria um DataFrame a partir dos dados
 df_medidor = pd.DataFrame(dados)
+df_medidor2 = pd.DataFrame(dados2)
 
 # Cria o gráfico de medidor de progresso circular
 fig = px.pie(df_medidor, values='Porcentagem', names='Categoria',
              color='Categoria', color_discrete_map={'Concluído': 'green', 'Restante': 'lightgrey'},
              hole=0.7, width=400, height=400)
+fig2 = px.pie(df_medidor2, values='Porcentagem', names='Categoria',
+              color='Categoria', color_discrete_map={'Concluído': 'green', 'Restante': 'lightgrey'},
+              hole=0.7, width=400, height=400)
 
 # Adiciona anotação com a porcentagem total no meio do gráfico
 fig.add_annotation(x=0.5, y=0.5, text=f"{porcentagem_total*100:.2f}%",
                    font=dict(size=30, color="black", family="Roboto"), showarrow=False)
+fig2.add_annotation(x=0.5, y=0.5, text=f"{porcentagem_total_mes*100:.2f}%",
+                    font=dict(size=30, color="black", family="Roboto"), showarrow=False)
 
 # Configurações adicionais do layout
 fig.update_traces(textinfo='none')
-fig.update_layout(title_text='Progresso do Projeto', showlegend=False)
-
-st.plotly_chart(fig)
+fig.update_layout(title=dict(text='Progresso do Projeto', font=dict(size=24)),
+                  showlegend=False)
+fig2.update_traces(textinfo='none')
+fig2.update_layout(title=dict(text='Progresso do Mês', font=dict(size=24)),
+                   showlegend=False)
 
 fig_gantt = px.timeline(
     df_filter_real,
     x_start='Data Inicial',
     x_end='Data Final',
     y='Nome',
-    title='Gráfico de Gantt'
+    title='Gráfico de Gantt',
 )
 
+fig_gantt.update_traces(marker=dict(color='#08255d'))
 fig_gantt.update_yaxes(categoryorder='total ascending')
 fig_gantt.update_layout(xaxis=dict(title='Data'),
-                        yaxis=dict(title='Atividade'))
+                        yaxis=dict(title='Atividade'),
+                        title=dict(text='Progresso do Mês',
+                                   font=dict(size=24)),
+                        width=1080,
+                        height=350)
+# fig_gantt.update_layout(width=1920, height=1080)
+
+col1, col2 = st.columns(2)
+col1.plotly_chart(fig)
+col2.plotly_chart(fig2)
 
 st.plotly_chart(fig_gantt)
 
